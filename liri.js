@@ -31,14 +31,20 @@ for (var i = 3; i < nodeArgs.length; i++) {
     nextUserInput = userInput.replace(/%20/g, " ");
 }
 
-runBot();
-
+//For liri-bot command "concert-this 'artist-name'",
+//this function uses Bands in Town API to search the artist's event details.
+//Details are displayed on the terminal and also appended to log file 'log.txt'
+//If artist name is not provided, function displays error message "Missing artist name". 
 function concertThis() {
     var artist = userInput;
+    if(artist==""){
+        console.log("Missing artist name.");
+        return;
+    }
     var bands_url = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=" + process.env.APP_ID;
 
-       //Append userInput to log.txt
-       fs.appendFileSync("log.txt", nextUserInput + "\n----------------\n", function (error) {
+    //Append userInput to log.txt
+    fs.appendFileSync("log.txt", nextUserInput + "\n----------------\n", function (error) {
         if (error) {
             console.log(error);
         };
@@ -94,62 +100,93 @@ function concertThis() {
         }
     });
 }
+
+//For liri-bot command "spotify-this-song 'song-title'",
+//this function uses Spotify API to search the song details.
+//Details are displayed on the terminal and also appended to log file 'log.txt'
+//If no song title is provided, defaults to "The Sign" track by Ace of Base. 
 function spotifyThisSong() {
     var search_type = "track";
     var search_query = "";
+    var result = "";
     if (!userInput) {
-        userInput = "The%20Sign";
+        userInput = "The+Sign";
         nextUserInput = userInput.replace(/%20/g, " ");
+        var artist = "Ace+of+Base";
+        var query = "https://api.spotify.com/v1/search?q=track:" + userInput + "%20artist:" + artist + "&type=track&limit=1";
+        spotify
+            .request(query)
+            .then(function (data) {
+                //Assign data being used to a variable
+                var info = data.tracks.items
 
+                //Loop through all the "items" array
+                for (var i = 0; i < info.length; i++) {
+                    //Store "album" object to variable
+                    var albumObject = info[i].album;
+                    var trackName = info[i].name
+                    var preview = info[i].preview_url
+                    //Store "artists" array to variable
+                    var artistsInfo = albumObject.artists
+                    //Loop through "artists" array
+                    for (var j = 0; j < artistsInfo.length; j++) {
+                        console.log("Artist: " + artistsInfo[j].name)
+                        console.log("Song Name: " + trackName)
+                        console.log("Preview of Song: " + preview)
+                        console.log("Album Name: " + albumObject.name)
+                        console.log("----------------")
+                        //Append data to log.txt
+                        fs.appendFileSync("log.txt", "Artist: " + artistsInfo[j].name + "\nSong Name: " + trackName + "\nPreview of Song: " + preview + "\nAlbum Name: " + albumObject.name + "\n----------------\n", function (error) {
+                            if (error) {
+                                console.log(error);
+                            };
+                        });
+                    }
+                }
+            })
+            .catch(function (err) {
+                console.error('Error occurred: ' + err);
+            });
+    }
+    else {
+        spotify.search({
+
+            type: "track",
+            query: userInput
+        }, function (err, data) {
+            //Assign data being used to a variable
+            var info = data.tracks.items
+
+            //Loop through all the "items" array
+            for (var i = 0; i < info.length; i++) {
+                //Store "album" object to variable
+                var albumObject = info[i].album;
+                var trackName = info[i].name
+                var preview = info[i].preview_url
+                //Store "artists" array to variable
+                var artistsInfo = albumObject.artists
+                //Loop through "artists" array
+                for (var j = 0; j < artistsInfo.length; j++) {
+                    console.log("Artist: " + artistsInfo[j].name)
+                    console.log("Song Name: " + trackName)
+                    console.log("Preview of Song: " + preview)
+                    console.log("Album Name: " + albumObject.name)
+                    console.log("----------------")
+                    //Append data to log.txt
+                    fs.appendFileSync("log.txt", "Artist: " + artistsInfo[j].name + "\nSong Name: " + trackName + "\nPreview of Song: " + preview + "\nAlbum Name: " + albumObject.name + "\n----------------\n", function (error) {
+                        if (error) {
+                            console.log(error);
+                        };
+                    });
+                }
+            }
+        });
     }
 
-    //Append userInput to log.txt
-    fs.appendFileSync("log.txt", nextUserInput + "\n----------------\n", function (error) {
-        if (error) {
-            console.log(error);
-        };
-    });
-
-    spotify.search({
-
-        type: "track",
-        query: userInput
-    }, function (err, data) {
-        if (err) {
-            console.log("Error occured: " + err)
-        }
-
-        //Assign data being used to a variable
-        var info = data.tracks.items
-
-        //Loop through all the "items" array
-        for (var i = 0; i < info.length; i++) {
-            //Store "album" object to variable
-            var albumObject = info[i].album;
-            var trackName = info[i].name
-            var preview = info[i].preview_url
-            //Store "artists" array to variable
-            var artistsInfo = albumObject.artists
-            //Loop through "artists" array
-            for (var j = 0; j < artistsInfo.length; j++) {
-                console.log("Artist: " + artistsInfo[j].name)
-                console.log("Song Name: " + trackName)
-                console.log("Preview of Song: " + preview)
-                console.log("Album Name: " + albumObject.name)
-                console.log("----------------")
-                //Append data to log.txt
-                fs.appendFileSync("log.txt", "Artist: " + artistsInfo[j].name + "\nSong Name: " + trackName + "\nPreview of Song: " + preview + "\nAlbum Name: " + albumObject.name + "\n----------------\n", function (error) {
-                    if (error) {
-                        console.log(error);
-                    };
-                });
-            }
-        }
-    })
 }
 
-function doWhatItSays()
-{
+//This function executes liri-bot command mentioned in the random.txt file
+function doWhatItSays() {
     var fs = require("fs");
 
     //Read random.txt file
@@ -167,44 +204,48 @@ function doWhatItSays()
     });
 }
 
-function showMovieDetails(){
-            //If statement for no movie provided
-            if (!userInput) {
-                userInput = "Mr%20Nobody";
-                nextUserInput = userInput.replace(/%20/g, " ");
-            }
+//For liri-bot command "movie-this 'movie-name'",
+//this function uses OMDB API to search the movie details.
+//Details are displayed on the terminal and also appended to the log file 'log.txt'
+//If movie-name is not provided, function displays details of movie "Mr. Nobody". 
+function showMovieDetails() {
+    //If statement for no movie provided
+    if (!userInput) {
+        userInput = "Mr%20Nobody";
+        nextUserInput = userInput.replace(/%20/g, " ");
+    }
 
-            //Append userInput to log.txt
-            fs.appendFileSync("log.txt", nextUserInput + "\n----------------\n", function (error) {
-                if (error) {
-                    console.log(error);
-                };
-            });
+    //Append userInput to log.txt
+    fs.appendFileSync("log.txt", nextUserInput + "\n----------------\n", function (error) {
+        if (error) {
+            console.log(error);
+        };
+    });
 
-            //Run request to OMDB
-            var queryURL = "https://www.omdbapi.com/?t=" + userInput + "&y=&plot=short&apikey=trilogy"
-            request(queryURL, function (error, response, body) {
-                if (!error && response.statusCode === 200) {
-                    var info = JSON.parse(body);
-                    console.log("Title: " + info.Title)
-                    console.log("Release Year: " + info.Year)
-                    console.log("OMDB Rating: " + info.Ratings[0].Value)
-                    console.log("Rating: " + info.Ratings[1].Value)
-                    console.log("Country: " + info.Country)
-                    console.log("Language: " + info.Language)
-                    console.log("Plot: " + info.Plot)
-                    console.log("Actors: " + info.Actors)
+    //Run request to OMDB
+    var queryURL = "https://www.omdbapi.com/?t=" + userInput + "&y=&plot=short&apikey=trilogy"
+    request(queryURL, function (error, response, body) {
+        if (!error && response.statusCode === 200) {
+            var info = JSON.parse(body);
+            console.log("Title: " + info.Title)
+            console.log("Release Year: " + info.Year)
+            console.log("OMDB Rating: " + info.Ratings[0].Value)
+            console.log("Rating: " + info.Ratings[1].Value)
+            console.log("Country: " + info.Country)
+            console.log("Language: " + info.Language)
+            console.log("Plot: " + info.Plot)
+            console.log("Actors: " + info.Actors)
 
-                    //Append data to log.txt
-                    fs.appendFileSync("log.txt", "Title: " + info.Title + "\nRelease Year: " + info.Year + "\nIMDB Rating: " + info.Ratings[0].Value + "\nRating: " +
-                        info.Ratings[1].Value + "\nCountry: " + info.Country + "\nLanguage: " + info.Language + "\nPlot: " + info.Plot + "\nActors: " + info.Actors + "\n----------------\n",
-                        function (error) {
-                            if (error) {
-                                console.log(error);
-                            };
-                        });
-                }
-            });
+            //Append data to log.txt
+            fs.appendFileSync("log.txt", "Title: " + info.Title + "\nRelease Year: " + info.Year + "\nIMDB Rating: " + info.Ratings[0].Value + "\nRating: " +
+                info.Ratings[1].Value + "\nCountry: " + info.Country + "\nLanguage: " + info.Language + "\nPlot: " + info.Plot + "\nActors: " + info.Actors + "\n----------------\n",
+                function (error) {
+                    if (error) {
+                        console.log(error);
+                    };
+                });
+        }
+    });
 }
 
 function runBot() {
@@ -222,7 +263,11 @@ function runBot() {
             doWhatItSays();
             break;
         default:
-            console.log('default');
+            console.log('Unknown command:', command);
+            fs.appendFileSync('log.txt', "Unknown command:" + command);
             break;
     }
 }
+
+//Run the liri bot
+runBot();
