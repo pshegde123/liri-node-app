@@ -23,6 +23,7 @@ This command will search the [_Bands in Town Artist Events_](https://artists.ban
 * Song artist,
 * Preview link of song from Spotify,
 * Album name.
+
 If no song name is provided, then it defaults to "The Sign" by Ace of Base.
 
 ![](./images/spotifythissong.PNG)
@@ -35,7 +36,8 @@ If no song name is provided, then it defaults to "The Sign" by Ace of Base.
 * Rotten Tomatoes rating,
 * Movie plot, 
 * Actors. 
-If no movie name is provided, then it defaults to "Mr. Nobody" movie details.
+
+If no movie name is provided, then it defaults to "Mr. Nobody" movie.
 
 ![](./images/moviethis.PNG)
 
