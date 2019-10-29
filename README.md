@@ -1,13 +1,18 @@
 # LIRI - Language Interpretation and Recognition Interface
-##### LIRI is a command line `node js` app that takes command line parameters and gives you back data retrieved from different web API's.
+##### LIRI is a command line `node js` app that takes command line parameters and returns the data retrieved from different web API's.
 
 ## Overview
-##### LIRI takes following commands: 
-* `concert-this`
+To execute the script use following syntax:
+
+          `node liri.js <LIRI-command> <Artist Name/Band Name/Movie Name/Track Name>`
+          
+Following are LIRI-commands: 
+* `concert-this` 
 * `spotify-this-song`
 * `movie-this`
 * `do-what-it-says`
-###### Result is displayed on the terminal. Result is also logged in `log.txt`
+
+Result is displayed on the terminal and also appended to `log.txt`
 
 ## What each command does:
 (1) `concert-this <artist/band name here>`:
@@ -20,7 +25,7 @@ This command will search the [_Bands in Town Artist Events_](https://artists.ban
 (4) `do-what-it-says`: LIRI will execute command from random.txt file.Current command in _random.txt_ is `spotify-this-song,"I want it that way"`
 
 ## How to execute
----
+
 * Clone this repository.
 * On your CLI terminal execute command `npm install` to install the dependancies.
 * Set following environmental variables
